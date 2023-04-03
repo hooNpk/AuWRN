@@ -6,7 +6,7 @@ from slack_sdk.errors import SlackApiError
 from slack_bolt import App, BoltContext
 from slack_bolt.adapter.flask import SlackRequestHandler
 
-SLACK_BOT_TOKEN = "xoxb-5021438571312-5060156183073-J018LWrVbUH6O51sKPVDNEBD"
+SLACK_BOT_TOKEN = "xoxb-5021438571312-5060156183073-0cf1vziuYMY5PocGN91ZOwHk"
 SLACK_SIGNING_SECRET = "e14e7afc7a2cc698c6241d216d1b6264"
 
 import os
@@ -69,8 +69,22 @@ def update_home_tab(client, event, logger):
     logger.error(f"Error publishing home tab: {e}")
 
 @app.event("message")
-def handle_message(client, event):
-   print(event)
+def handle_message(client, event, logger):
+  channel_id = event['channel']
+  msg_text, msg_type = event['text'], event['type']
+  text = "안녕하세요 테스트입니다."
+  print("EVENT: ", event)
+  channel_type = event['channel_type']
+  if channel_type == 'im':
+    try:
+      result = client.chat_postMessage(
+        channel=channel_id,
+        text=text
+      )
+      print(result)
+    except SlackApiError as e:
+      print(f"Error: {e}")
+  
    
 
 # Start your app
