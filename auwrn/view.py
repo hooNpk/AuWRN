@@ -36,19 +36,19 @@ home_view = {
     ]
 }
 
-def get_tutorial_view(user_options, channel_options):
-    tutorial_views = {
-    "review" : [
+def get_tutorial_view(user_list, channel_list):
+    user_options = [{"text":{"type":"plain_text","text":user["real_name"], "emoji":True}, 
+                    "value":user["id"]}
+                    for user in user_list if user['is_bot']== False]
+    channel_options = [{"text":{"type":"plain_text","text":channel["name"], "emoji":True}, 
+                        "value":channel["id"]}
+                        for channel in channel_list]
+    tutorial_views = [
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": """:mag: 연구노트 생성을 위해 미리 설정을 해줘야 해요.
-                먼저 연구노트 검토자와 연구노트를 검토받을 채널을 지정해주세요.
-                연구노트 검토자는 보통 교수님이나 연구 책임자에요.
-                오른은 사용자와 대화를 나눈뒤 생성한 연구노트를 특정 채널에 보내 검토자에게 확인을 받아요.
-                이때 연구노트를 보낼 채널도 지정해주세요.
-                """
+                "text": ":mag: 연구노트 생성을 위해 미리 설정을 해줘야 해요.\n먼저 연구노트 검토자와 연구노트를 검토받을 채널을 지정해주세요.\n연구노트 검토자는 보통 교수님이나 연구 책임자에요.\n오른은 연구노트를 생성하여 특정 채널에 보내 검토자에게 확인을 받아요.\n이때 연구노트를 보낼 채널도 지정해주세요."
             }
         },
         {
@@ -63,12 +63,13 @@ def get_tutorial_view(user_options, channel_options):
             "accessory": {
                 "type": "static_select",
                 "placeholder": {
-                "type": "plain_text",
-                "emoji": True,
-                "text": "검토자"
+                    "type": "plain_text",
+                    "text": "검토자",
+                    "emoji": True,
                 },
                 "options": user_options,
-                "action_id" : "button_click"
+                "action_id" : "button_click",
+                "block_id" : "select_reviewer"
             }
         },
         {
@@ -80,12 +81,13 @@ def get_tutorial_view(user_options, channel_options):
             "accessory": {
                 "type": "static_select",
                 "placeholder": {
-                "type": "plain_text",
-                "emoji": True,
-                "text": "검토받을채널"
+                    "type": "plain_text",
+                    "text": "검토받을채널",
+                    "emoji": True,
                 },
                 "options": channel_options,
-                "action_id" : "button_click"
+                "action_id" : "button_click",
+                "block_id" : "select_review_channel"
             }
         },
         {
@@ -98,14 +100,13 @@ def get_tutorial_view(user_options, channel_options):
                 "type": "button",
                 "text": {
                     "type": "plain_text",
-                    "emoji": True,
                     "text": "제출"
                 },
                 "value": "click_me_123",
-                "action_id" : "button_click"
+                "action_id" : "button_click",
+                "block_id" : "option_submit"
                 }
             ]
         }
     ]
-    }
     return tutorial_views

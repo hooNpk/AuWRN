@@ -1,11 +1,11 @@
 import boto3
 
 class S3Connector():
-    def __init__(self) -> None:
+    def __init__(self, access_key, secret) -> None:
         self.client = boto3.client(
             's3',
-            aws_access_key_id='your_access_key',
-            aws_secret_access_key='your_secret_key'
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret
         )
     
     def get_object(self, path):
