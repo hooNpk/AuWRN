@@ -17,8 +17,15 @@ class S3Connector():
         return data
 
     def upload_object(self, path, data):
-        self.client.s3.put_object(
+        self.client.put_object(
             Body=data,
             Bucket='auwrn',
             Key=path
         )
+    
+    def get_list(self, prefix):
+        res = self.client.list_objects_v2(
+            Bucket = 'auwrn',
+            Prefix = prefix,
+        )
+        return res
