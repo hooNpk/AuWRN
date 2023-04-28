@@ -48,7 +48,7 @@ def get_tutorial_view(user_list, channel_list, team_id, user_id):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": ":mag: 안녕하세요 처음 오셨네요! 반가워요 저는 오른이에요.\n연구노트 생성을 위해 미리 설정을 해줘야 해요.\n먼저 연구노트 검토자와 연구노트를 검토받을 채널을 지정해주세요.\n연구노트 검토자는 보통 교수님이나 연구 책임자에요.\n오른은 연구노트를 생성하여 특정 채널에 보내 검토자에게 확인을 받아요.\n이때 연구노트를 보낼 채널도 지정해주세요."
+                "text": "안녕하세요 처음 오셨네요! 반가워요 저는 오른이에요.\n 오른은 연구노트를 작성하며 창의적이고 발전적인 연구를 도와드리고 있어요.\n 오른과 함께 연구 성과 내실 준비 되셨죠? :smile: \n연구노트 생성을 위해 필요한 정보들을 먼저 설정해 주세요.\n\n 오른과 대화를 하면 연구노트가 만들어져요. 만들어진 연구노트는 검토자에게 확인을 받아야 연구노트로 인정받을 수 있어요.\n이때 연구노트를 보낼 채널도 지정해주세요."
             }
         },
         {
@@ -92,19 +92,27 @@ def get_tutorial_view(user_list, channel_list, team_id, user_id):
         },
         {
 			"type": "input",
+            "block_id": f"tutorial-org:{team_id}-{user_id}",
 			"element": {
 				"type": "plain_text_input",
 				"multiline": True,
 				"action_id": "button_click"
 			},
 			"label": {
+				"type": "plain_text",
+				"text": "연구 기관",
+				"emoji": True
+			},
+            "hint" : {
 				"type": "plain_text",
 				"text": "소속된 기관을 알려주세요. 예시)성균관대학교 소프트웨어공학 연구실",
 				"emoji": True
-			}
+			},
+            "dispatch_action" : True
 		},
         {
 			"type": "input",
+            "block_id": f"tutorial-project:{team_id}-{user_id}",
 			"element": {
 				"type": "plain_text_input",
 				"multiline": True,
@@ -112,9 +120,15 @@ def get_tutorial_view(user_list, channel_list, team_id, user_id):
 			},
 			"label": {
 				"type": "plain_text",
+				"text": "연구 과제 제목",
+				"emoji": True
+			},
+            "hint": {
+				"type": "plain_text",
 				"text": "연구노트를 작성할 연구 과제 제목을 알려주세요. 예시) 이기종 비정형 데이터 대용량 처리 시스템",
 				"emoji": True
-			}
+			},
+            "dispatch_action" : True
 		},
         {
             "type": "divider"

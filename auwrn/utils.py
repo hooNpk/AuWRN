@@ -29,3 +29,9 @@ class S3Connector():
             Prefix = prefix,
         )
         return res
+
+    def update_config(self, team_id, user_id, data):
+        config = self.get_object(f"{team_id}/{user_id}/config.json")
+        for key, val in data.items():
+            config[key] = val
+        self.upload_object(f"{team_id}/{user_id}/config.json", config)

@@ -38,13 +38,13 @@ def handle_message(client, event, logger):
         is_new_tm = tool.is_new_team(team_list)
         if is_new_tm:
             s3_conn.upload_object(path=f"team-{team_id}/user-{user_id}/", data='')
-            tool.tutorial(app, client, channel_id, get_tutorial_view)
+            tool.tutorial(app, client, channel_id, get_tutorial_view, team_id, user_id)
         else:
-            service_user_list = s3_conn.get_list(f"team-{team_id}/user-")
+            service_user_list = s3_conn.get_list(f"team-{team_id}/user-{user_id}")
             is_new_ur = tool.is_new_user(service_user_list)
             if is_new_ur:
                 s3_conn.upload_object(path=f"team-{team_id}/user-{user_id}/", data='')
-                tool.tutorial(app, client, channel_id, get_tutorial_view)
+                tool.tutorial(app, client, channel_id, get_tutorial_view, team_id, user_id)
             else:
                 try:
                     msg_prompt = chat_gen.set_prompt(msg_text)
@@ -61,12 +61,14 @@ def handle_message(client, event, logger):
 def handle_interaction(ack, payload):
     ack()
     block_id:str = payload['block_id']#TODO interaction 들어올 때 사용자 정보 업데이트
-    if block_id.startswith("tutorial-reviewer"): #user 폴더에 있는 config.txt 업데이트
+    if block_id.startswith("tutorial-reviewer"): #user 폴더에 있는 config.json 업데이트
         team_id, user_id = block_id.split(':')[1].split('-')
-        print("ABC")
+        
     elif block_id.startswith("tutorial-review-channel"):
+        team_id, user_id = block_id.split(':')[1].split('-')
         print("BCD")
     elif block_id.startswith("tutorial-submit-button-clicked"):
+        team_id, user_id = block_id.split(':')[1].split('-')
         print("CDE")
     print("interaction : ", payload)
     #interaction 받을 때마다 S3에 올리기.
