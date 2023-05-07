@@ -22,6 +22,7 @@ importlib-metadata==6.1.0
 itsdangerous==2.1.2
 Jinja2==3.1.2
 jmespath==1.0.1
+loguru==0.7.0
 MarkupSafe==2.1.2
 multidict==6.0.4
 openai==0.27.4
@@ -37,6 +38,7 @@ toml==0.10.2
 tqdm==4.65.0
 urllib3==1.26.15
 Werkzeug==2.2.3
+win32-setctime==1.1.0
 wsproto==1.2.0
 yarl==1.8.2
 zipp==3.15.0

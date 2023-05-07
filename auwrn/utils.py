@@ -42,3 +42,13 @@ class S3Connector():
         for key, val in data.items():
             config[key] = val
         self.upload_object(f"{team_id}/{user_id}/config.json", config)
+    
+    def upload_file_object(self, path, data):
+        try:
+            self.client.upload_fileobj(
+                Fileobj=data,
+                Bucket='auwrn',
+                Key=path
+            )
+        except Exception as e:
+            print(traceback.format_exc())

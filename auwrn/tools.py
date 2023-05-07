@@ -1,4 +1,6 @@
 import json
+import requests
+import io
 from auwrn.view import get_tutorial_view, get_tutorial2_view
 
 def is_new_team(conn, team_id):
@@ -41,4 +43,24 @@ def update_user_config(id:dict, conn, kwargs):
     for key, item in kwargs.items():
         config[key] = item
     conn.upload_object(f"team-{id['team_id']}/user-{id['user_id']}/config.json", data=json.dumps(config, ensure_ascii=False))
-    
+
+def upload_image(files, conn):
+    for file in files:
+        file_id = file['id']
+        filetype = file['filetype']
+        file_name = file['title']
+        user_id = file['user']
+        team_id = file['user_team']
+        file_dwld_url = file['url_private_download']
+        response = requests.get(file_dwld_url)
+        image_bytes = io.BytesIO(response.content)
+        if 'research' in file_name or '연구' in file_name or '작성' in file_name:
+            conn.upload_file_object(
+                path=f"team-{team_id}/user-{user_id}/researcher.{filetype}",
+                data=image_bytes
+            )
+        elif 'reviewer' in file_name or '검토' in file_name:
+            conn.upload_file_object(
+                path=f"team-{team_id}/user-{user_id}/reviewer.{filetype}",
+                data=image_bytes
+            )
