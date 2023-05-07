@@ -1,4 +1,5 @@
 import boto3
+import traceback
 
 class S3Connector():
     def __init__(self, access_key, secret) -> None:
@@ -9,19 +10,25 @@ class S3Connector():
         )
     
     def get_object(self, path):
-        response = self.client.get_object(
-            Bucket='auwrn',
-            Key=path
-        )
-        data = response['Body'].read()
+        try:
+            response = self.client.get_object(
+                Bucket='auwrn',
+                Key=path
+            )
+            data = response['Body'].read().decode('utf-8')
+        except Exception as e:
+            print(traceback.format_exc())
         return data
 
     def upload_object(self, path, data):
-        self.client.put_object(
-            Body=data,
-            Bucket='auwrn',
-            Key=path
-        )
+        try:
+            self.client.put_object(
+                Body=data.encode('utf-8'),
+                Bucket='auwrn',
+                Key=path
+            )
+        except Exception as e:
+            print(traceback.format_exc())
     
     def get_list(self, prefix):
         res = self.client.list_objects_v2(
