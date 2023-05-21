@@ -203,6 +203,7 @@ ocr/src/utils/temp/*
 
 ### Configuration Files ###
 auwrn/config.py
+prompts.py
 
 #nohup log
 nohup.out
