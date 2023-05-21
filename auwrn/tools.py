@@ -2,6 +2,9 @@ import json
 import requests
 import io
 from auwrn.view import get_tutorial_view, get_tutorial2_view
+from datetime import datetime, timezone, timedelta
+import botocore
+KST = timezone(timedelta(hours=9))
 
 def is_new_team(conn, team_id):
     team_list = conn.get_list(f"team-{team_id}/")
@@ -16,6 +19,21 @@ def is_new_user(conn, team_id, user_id):
         return True
     else:
         return False
+
+def which_stage(conn, team_id, user_id):
+    today = datetime.now(KST).strftime('%Y-%m-%d')
+    today_dialogue = conn.get_list(f"team-{team_id}/user-{user_id}/dialogue/{today}.json")
+    if today_dialogue['KeyCount']==0:
+        update_dialogue(
+            conn,
+            id={"team_id":team_id, "user_id":user_id},
+            start=True
+        )
+        return 0
+    else:
+        cvstn = conn.get_object(f"team-{team_id}/user-{user_id}/dialogue/{today}.json")
+        cvstn = json.loads(cvstn)
+        return cvstn['stage']
 
 def tutorial(app, channel_id, team_id, user_id):
     user_list = app.client.users_list()['members']
@@ -36,6 +54,19 @@ def tutorial2(app, channel_id):
         text = "연구노트 작성을 설정해주세요",
         blocks = block
     )
+
+def update_dialogue(conn, id:dict={}, talks=[], start=False, distract=False):#TODO dialogue stage 측정하며 기록하기
+    today = datetime.now(KST).strftime('%Y-%m-%d')
+    if start:
+        cvstn = {"stage":0, "dialogue":[]}
+        conn.upload_object(f"team-{id['team_id']}/user-{id['user_id']}/dialogue/{today}.json",data=json.dumps(cvstn, ensure_ascii=False))
+    else:
+        cvstn = conn.get_object(f"team-{id['team_id']}/user-{id['user_id']}/dialogue/{today}.json")
+        cvstn = json.loads(cvstn)
+        cvstn['dialogue'] = cvstn['dialogue']+talks
+        if not distract:
+            cvstn['stage'] = cvstn['stage']+1
+        conn.upload_object(f"team-{id['team_id']}/user-{id['user_id']}/dialogue/{today}.json",data=json.dumps(cvstn, ensure_ascii=False))
 
 def update_user_config(id:dict, conn, kwargs):
     config = conn.get_object(f"team-{id['team_id']}/user-{id['user_id']}/config.json")

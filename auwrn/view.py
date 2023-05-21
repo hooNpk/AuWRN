@@ -77,7 +77,7 @@ def get_tutorial_view(user_list, channel_list, ids:dict):
             "block_id": f"tutorial-review-channel:{ids['team_id']}-{ids['user_id']}",
             "text": {
                 "type": "mrkdwn",
-                "text": "*<연구노트를 올릴 채널>*\n연구노트를 검토를 위해 올릴 채널입니다."
+                "text": "*<연구노트를 올릴 채널>*\n연구노트 검토를 위해 올릴 채널입니다."
             },
             "accessory": {
                 "type": "static_select",
@@ -121,6 +121,26 @@ def get_tutorial_view(user_list, channel_list, ids:dict):
 			"label": {
 				"type": "plain_text",
 				"text": "연구 과제 제목",
+				"emoji": True
+			},
+            "hint": {
+				"type": "plain_text",
+				"text": "연구노트를 작성할 연구 과제 제목을 알려주세요. 예시) 이기종 비정형 데이터 대용량 처리 시스템",
+				"emoji": True
+			},
+            "dispatch_action" : True
+		},
+        {
+			"type": "input",
+            "block_id": f"research-keywords:{ids['team_id']}-{ids['user_id']}",
+			"element": {
+				"type": "plain_text_input",
+				"multiline": True,
+				"action_id": "button_click"
+			},
+			"label": {
+				"type": "plain_text",
+				"text": "연구 분야 : 자세히 작성하면 오른과 좀 더 유용한 대화를 나눌 수 있어요.",
 				"emoji": True
 			},
             "hint": {

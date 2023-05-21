@@ -5,6 +5,7 @@ from config import *
 from auwrn.generate_chat import ChatGenerator
 from auwrn.utils import S3Connector
 from auwrn.view import home_view
+from auwrn.template import stage_template
 from auwrn.log import ProductionLogConfig, DevelopmentLogConfig
 import auwrn.tools as tool
 import json
@@ -43,6 +44,7 @@ def handle_message(client, event):
         if 'subtype' in event.keys():
             sub_type = event['subtype']
             if sub_type == 'file_share' and REQ_SGNTRE:
+                #TODO REQ_SGNTRE로 확인하는거 바꿔야 함.
                 files = event['files']
                 channel_id = event['channel']
                 tool.upload_image(files, s3_conn)
@@ -67,8 +69,38 @@ def handle_message(client, event):
                     tool.tutorial(app, channel_id, team_id, user_id)
                 else:
                     try:
-                        msg_prompt = chat_gen.set_prompt(msg_text)
-                        res_text = chat_gen.generate_text(msg_prompt)
+                        cur_stage = tool.which_stage(s3_conn, team_id, user_id)
+                        if cur_stage==0:
+                            tmplte = stage_template(cur_stage)
+                            msg_prompt = chat_gen.set_prompt({'team_id':team_id,'user_id':user_id},tmplte)
+                            res_text = chat_gen.generate_text(msg_prompt, type='augment')
+                        elif cur_stage==1:
+                            msg_prompt = chat_gen.set_prompt({'team_id':team_id,'user_id':user_id},msg_text)
+                            res_text = chat_gen.generate_text(msg_prompt, type='summarize')
+                        elif cur_stage==2:
+                            msg_prompt = chat_gen.set_prompt({'team_id':team_id,'user_id':user_id},msg_text)
+                            res_text = chat_gen.generate_text(msg_prompt, type='plan', tok_num=300)
+                        elif cur_stage==3:
+                            msg_prompt = chat_gen.set_prompt({'team_id':team_id,'user_id':user_id},msg_text)
+                            res_text = chat_gen.generate_text(msg_prompt, type='bye')
+                            res_text += "\n지금까지 대화 내용을 바탕으로 연구 노트를 생성해서 보내드릴게요. 잠시만 기다려주세요!"
+                        else:
+                            res_text = stage_template[cur_stage]
+                        if '연구에 대해' in res_text or cur_stage>3:
+                            tool.update_dialogue(
+                                s3_conn,
+                                id={'team_id':team_id,'user_id':user_id},
+                                talks=[{'role':'user', 'content':msg_text},
+                                    {'role':'assistant', 'content':res_text}],
+                                distract=True
+                            )
+                        else:
+                            tool.update_dialogue(
+                                s3_conn,
+                                id={'team_id':team_id,'user_id':user_id},
+                                talks=[{'role':'user', 'content':msg_text},
+                                    {'role':'assistant', 'content':res_text}]
+                            )
                         result = client.chat_postMessage(
                             channel=channel_id,
                             text=res_text
@@ -78,7 +110,6 @@ def handle_message(client, event):
     else:
         print("ABC")
 
-# 3. 대화를 통해 연구노트 작성하도록 하기.
 @app.block_action('button_click')
 def handle_interaction(ack, payload):
     ack()
