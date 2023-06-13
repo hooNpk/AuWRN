@@ -6,6 +6,7 @@ from auwrn.generate_chat import ChatGenerator
 from auwrn.utils import S3Connector
 from auwrn.view import home_view
 from auwrn.template import stage_template
+from auwrn.pdf import Contenter
 from auwrn.log import ProductionLogConfig, DevelopmentLogConfig
 import auwrn.tools as tool
 import json
@@ -20,6 +21,7 @@ app = App(
     signing_secret=SLACK_SIGNING_SECRET
 )
 chat_gen = ChatGenerator(OPENAI_ORG, OPENAI_KEY)
+filer = Contenter(OPENAI_ORG, OPENAI_KEY)
 s3_conn = S3Connector(AWS_KEY, AWS_SECRET)
 REQ_SGNTRE = False
 
@@ -79,11 +81,13 @@ def handle_message(client, event):
                             res_text = chat_gen.generate_text(msg_prompt, type='summarize')
                         elif cur_stage==2:
                             msg_prompt = chat_gen.set_prompt({'team_id':team_id,'user_id':user_id},msg_text)
-                            res_text = chat_gen.generate_text(msg_prompt, type='plan', tok_num=300)
+                            res_text = chat_gen.generate_text(msg_prompt, type='plan', tok_num=250)
                         elif cur_stage==3:
                             msg_prompt = chat_gen.set_prompt({'team_id':team_id,'user_id':user_id},msg_text)
                             res_text = chat_gen.generate_text(msg_prompt, type='bye')
-                            res_text += "\n지금까지 대화 내용을 바탕으로 연구 노트를 생성해서 보내드릴게요. 잠시만 기다려주세요!"
+                            res_text += "\n지금까지 대화 내용을 바탕으로 연구 노트를 생성해서 보내드리겠습니다. 잠시만 기다려주세요!"
+                            content = filer.form_content({'team_id':team_id, 'user_id':user_id})
+                            filer.make_pdf({'team_id':team_id, 'user_id':user_id}, content)
                         else:
                             res_text = stage_template[cur_stage]
                         if '연구에 대해' in res_text or cur_stage>3:
