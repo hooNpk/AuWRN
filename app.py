@@ -21,8 +21,8 @@ app = App(
     signing_secret=SLACK_SIGNING_SECRET
 )
 chat_gen = ChatGenerator(OPENAI_ORG, OPENAI_KEY)
-filer = Contenter(OPENAI_ORG, OPENAI_KEY)
 s3_conn = S3Connector(AWS_KEY, AWS_SECRET)
+filer = Contenter(OPENAI_ORG, OPENAI_KEY, s3_conn)
 REQ_SGNTRE = False
 
 @app.event("app_home_opened")
@@ -121,11 +121,19 @@ def handle_interaction(ack, payload):
     block_id:str = payload['block_id']
     if block_id.startswith("tutorial-reviewer"):
         team_id, user_id = block_id.split(':')[1].split('-')
-        reviewer_name, reviewer_id = payload['selected_option']['text']['text'], payload['selected_option']['value']
+        reviewer_id = payload['selected_option']['value']
+        reviewer_info = app.client.users_info(user=reviewer_id)
+        user_info = app.client.users_info(user=user_id)
         tool.update_user_config(
             {"team_id":team_id, "user_id":user_id},
             s3_conn,
-            {"reviewName":reviewer_name, "reviewerId":reviewer_id}
+            {
+                "reviewerName":reviewer_info['user']['name'],
+                "reviewerId":reviewer_id,
+                "reviewerRealName":reviewer_info['user']['real_name'],
+                "userName":user_info['user']['name'],
+                "userRealName":user_info['user']['real_name']
+            }
         )
     elif block_id.startswith("tutorial-review-channel"):
         team_id, user_id = block_id.split(':')[1].split('-')

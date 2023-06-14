@@ -3,7 +3,6 @@ import requests
 import io
 from auwrn.view import get_tutorial_view, get_tutorial2_view
 from datetime import datetime, timezone, timedelta
-import botocore
 KST = timezone(timedelta(hours=9))
 
 def is_new_team(conn, team_id):
@@ -55,7 +54,7 @@ def tutorial2(app, channel_id):
         blocks = block
     )
 
-def update_dialogue(conn, id:dict={}, talks=[], start=False, distract=False):#TODO dialogue stage 측정하며 기록하기
+def update_dialogue(conn, id:dict={}, talks=[], start=False, distract=False):
     today = datetime.now(KST).strftime('%Y-%m-%d')
     if start:
         cvstn = {"stage":0, "dialogue":[]}
@@ -67,6 +66,11 @@ def update_dialogue(conn, id:dict={}, talks=[], start=False, distract=False):#TO
         if not distract:
             cvstn['stage'] = cvstn['stage']+1
         conn.upload_object(f"team-{id['team_id']}/user-{id['user_id']}/dialogue/{today}.json",data=json.dumps(cvstn, ensure_ascii=False))
+
+def get_user_config(conn, id):
+    cfg = conn.get_object(f"team-{id['team_id']}/user-{id['user_id']}/config.json")
+    cfg = json.loads(cfg)
+    return cfg
 
 def update_user_config(id:dict, conn, kwargs):
     config = conn.get_object(f"team-{id['team_id']}/user-{id['user_id']}/config.json")

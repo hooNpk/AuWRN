@@ -39,3 +39,16 @@ class ContentGenerator():
         dialogue = json.loads(cvstn)['dialogue']
         prompt = dialogue+[{"role":"user", "content":input_txt}]
         return prompt
+    
+    def set_prompts(self, id):
+        today = datetime.now(KST).strftime('%Y-%m-%d')
+        cvstn = self.conn.get_object(f"team-{id['team_id']}/user-{id['user_id']}/dialogue/{today}.json")
+        dialogue = json.loads(cvstn)['dialogue']
+        prompts = {
+            "keyword": dialogue+[{"role":"user", "content":"키워드 :"}],
+            "summary":dialogue+[{"role":"user", "content":"요약 :"}],
+            "learned":dialogue+[{"role":"user", "content":"배운점 :"}],
+            "tomorrow":dialogue+[{"role":"user", "content":"내일 계획 :"}]
+        }
+        print(f"Dialogue : {dialogue}")
+        return prompts
