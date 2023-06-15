@@ -96,6 +96,7 @@ class Contenter(ContentGenerator):
             path,
             #stylesheets=[css]
         )
+        return path
 
 if __name__=="__main__":
     from auwrn.utils import S3Connector
@@ -104,7 +105,7 @@ if __name__=="__main__":
     
     contenter = Contenter(
         "org-IoS2U73DFBWnD9tF97CPmN3i",
-        
+
         s3_conn=s3_conn
     )
     contents = contenter.form_content({'team_id':'T050MCWGT96','user_id':'U04V54ECS7Q'})

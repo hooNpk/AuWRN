@@ -86,8 +86,6 @@ def handle_message(client, event):
                             msg_prompt = chat_gen.set_prompt({'team_id':team_id,'user_id':user_id},msg_text)
                             res_text = chat_gen.generate_text(msg_prompt, type='bye')
                             res_text += "\n지금까지 대화 내용을 바탕으로 연구 노트를 생성해서 보내드리겠습니다. 잠시만 기다려주세요!"
-                            content = filer.form_content({'team_id':team_id, 'user_id':user_id})
-                            filer.make_pdf({'team_id':team_id, 'user_id':user_id}, content)
                         else:
                             res_text = stage_template[cur_stage]
                         if '연구에 대해' in res_text or cur_stage>3:
@@ -109,6 +107,14 @@ def handle_message(client, event):
                             channel=channel_id,
                             text=res_text
                         )
+                        if cur_stage==3:
+                            content = filer.form_content({'team_id':team_id, 'user_id':user_id})
+                            pdf_path = filer.make_pdf({'team_id':team_id, 'user_id':user_id}, content)
+                            app.client.files_upload(
+                                channels= channel_id,
+                                initial_comment='오늘의 연구노트',
+                                file = pdf_path
+                            )
                     except SlackApiError as e:
                         logger.error(f"Error: {e}")
     else:

@@ -15,11 +15,11 @@ class ContentGenerator():
         openai.api_key = key
         self.prompts = prompt
 
-    def generate_content(self, input_prompt, type=None, tok_num=250):
+    def generate_content(self, input_prompt, type=None, tok_num=400):
         req_prompt = self.prompts[type]+input_prompt
         try:
             completions = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
+                model="gpt-3.5-turbo-0613",
                 messages = req_prompt,
                 max_tokens = tok_num,
                 n=1,
