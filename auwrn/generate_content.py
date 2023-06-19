@@ -1,4 +1,5 @@
 import openai
+from openai.error import APIConnectionError
 import traceback
 from datetime import datetime
 import pytz
@@ -6,6 +7,7 @@ from config import *
 from prompts import prompt
 from auwrn.utils import S3Connector
 import json
+from retry import retry
 KST = pytz.timezone('Asia/Seoul')
 
 class ContentGenerator():
@@ -15,6 +17,7 @@ class ContentGenerator():
         openai.api_key = key
         self.prompts = prompt
 
+    @retry(APIConnectionError, tries=3, delay=1)
     def generate_content(self, input_prompt, type=None, tok_num=400):
         req_prompt = self.prompts[type]+input_prompt
         try:
