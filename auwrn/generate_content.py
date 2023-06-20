@@ -4,18 +4,22 @@ import traceback
 from datetime import datetime
 import pytz
 from config import *
-from prompts import prompt
+from prompts import prompt, style
 from auwrn.utils import S3Connector
 import json
 from retry import retry
+from langchain.chat_models import ChatOpenAI
+from loguru import logger
 KST = pytz.timezone('Asia/Seoul')
 
 class ContentGenerator():
     def __init__(self, organization, key) -> None:
         self.conn = S3Connector(AWS_KEY, AWS_SECRET)
+        self.key = key
         openai.organization = organization
         openai.api_key = key
         self.prompts = prompt
+        self.styles = style
 
     @retry(APIConnectionError, tries=3, delay=1)
     def generate_content(self, input_prompt, type=None, tok_num=400):
@@ -36,6 +40,23 @@ class ContentGenerator():
             print(traceback.format_exc())
         return message
 
+    def gen_chain_content(self, conversation, type='learned', tok_num=400):
+        input_prompt = self.prompts[type]
+        chat = ChatOpenAI(
+            max_retries=3,
+            max_tokens=tok_num,
+            model_name = 'gpt-3.5-turbo-0613',
+            openai_api_key=self.key,
+            request_timeout=10,
+            streaming=True,
+            temperature=0.3
+        )
+        response = chat(input_prompt.format_messages(
+            style = self.styles[type],
+            conversation = conversation
+        ))
+        return response
+
     def set_prompt(self, id, input_txt):
         today = datetime.now(KST).strftime('%Y-%m-%d')
         cvstn = self.conn.get_object(f"team-{id['team_id']}/user-{id['user_id']}/dialogue/{today}.json")
@@ -43,6 +64,14 @@ class ContentGenerator():
         prompt = dialogue+[{"role":"user", "content":input_txt}]
         return prompt
     
+    def get_dialogues(self, id):
+        today = datetime.now(KST).strftime('%Y-%m-%d')
+        cvstn = self.conn.get_object(f"team-{id['team_id']}/user-{id['user_id']}/dialogue/{today}.json")
+        dialogue = json.loads(cvstn)['dialogue']
+        dialogues = [dial for dial in dialogue if dial['role']=='user']
+        logger.info(f"Dialogue : {dialogues}")
+        return dialogues
+
     def set_prompts(self, id):
         today = datetime.now(KST).strftime('%Y-%m-%d')
         cvstn = self.conn.get_object(f"team-{id['team_id']}/user-{id['user_id']}/dialogue/{today}.json")

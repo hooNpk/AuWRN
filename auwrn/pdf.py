@@ -1,9 +1,10 @@
 import os, sys
 from datetime import datetime, timezone, timedelta
 from bs4 import BeautifulSoup
+from loguru import logger
 os.add_dll_directory("C:\\Program Files\\GTK3-Runtime Win64\\bin")
 MODULE_PATH = os.path.dirname(__file__)
-#sys.path.append(os.getcwd())#없애야 할 수도 있음.
+sys.path.append(os.getcwd())#없애야 할 수도 있음.
 
 from weasyprint import HTML
 from auwrn.generate_content import ContentGenerator
@@ -57,31 +58,32 @@ class Contenter(ContentGenerator):
 
         soup.find('td', id='created').string = f"@{datetime.now(KST).strftime('%Y-%m-%d, %H:%M')}"
 
-        prompts = self.set_prompts(ids)
-        content_keyword = self.generate_content(prompts['keyword'], type='keyword')
-        print(f"Content Keyword : {content_keyword}")
+        # prompts = self.set_prompts(ids)
+        # content_keyword = self.generate_content(prompts['keyword'], type='keyword')
+        # print(f"Content Keyword : {content_keyword}")
 
         cfg = tool.get_user_config(self.s3_conn, ids)
 
-        soup.find('td', id='keyword').string = f"{content_keyword}"
+        # soup.find('td', id='keyword').string = f"{content_keyword}"
         soup.find('td', id='writer').string = cfg['userRealName']
         soup.find('td', id='reviewer').string = cfg['reviewerRealName']
 
-        summary = soup.find('ul', id='summary-list')
-        generated_summary = self.generate_content(prompts['summary'], type='summary')
-        print(f"Generated Summary : {generated_summary}")
+        # summary = soup.find('ul', id='summary-list')
+        # generated_summary = self.generate_content(prompts['summary'], type='summary')
+        # print(f"Generated Summary : {generated_summary}")
 
         # TODO
-        # generated_learned = self.generate_content(prompts['learned'], type='learned')
-        # print(f"Generated Learned : {generated_learned}")
+        conv = self.get_dialogues(ids)
+        generated_learned = self.gen_chain_content(conv, type='learned')
+        logger.info(f"Generated Learned : {generated_learned}")
 
         # generated_tomorrow = self.generate_content(prompts['tomorrow'], type='tomorrow')
         # print(f"Generated Learned : {generated_tomorrow}")
 
 
         new_tag = soup.new_tag("li", style="list-style-type:disc")
-        new_tag.string = generated_summary
-        summary.append(new_tag)
+        # new_tag.string = generated_summary
+        # summary.append(new_tag)
         soup.find('ul', id='learned-list')
         soup.find('ul', id='tomorrow-list')
         return soup.prettify()
@@ -101,6 +103,10 @@ class Contenter(ContentGenerator):
 if __name__=="__main__":
     from auwrn.utils import S3Connector
     from config import *
+    from auwrn.log import ProductionLogConfig, DevelopmentLogConfig
+    logger.remove()
+    log_config = DevelopmentLogConfig()
+    logger.configure(**log_config.LOGURU_SETTINGS)
     s3_conn = S3Connector(AWS_KEY, AWS_SECRET)
     
     contenter = Contenter(
