@@ -4,7 +4,7 @@ import traceback
 from datetime import datetime
 import pytz
 from config import *
-from prompts import prompt, style
+from prompts import prompt
 from auwrn.utils import S3Connector
 import json
 from retry import retry
@@ -19,7 +19,6 @@ class ContentGenerator():
         openai.organization = organization
         openai.api_key = key
         self.prompts = prompt
-        self.styles = style
 
     @retry(APIConnectionError, tries=3, delay=1)
     def generate_content(self, input_prompt, type=None, tok_num=400):
@@ -52,7 +51,6 @@ class ContentGenerator():
             temperature=0.3
         )
         response = chat(input_prompt.format_messages(
-            style = self.styles[type],
             conversation = conversation
         ))
         return response

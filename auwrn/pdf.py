@@ -49,43 +49,39 @@ class Contenter(ContentGenerator):
             <h3 id="learned" class="">결과</h3>
             <ul id="learned-list" class="bulleted-list">
             </ul>
-            <h3 id="tomorrow" class="">내일 할 일</h3>
-            <ul id="tomorrow-list" class="bulleted-list">
-            </ul>
             </div>
             </body>
         ''', 'html.parser')
 
         soup.find('td', id='created').string = f"@{datetime.now(KST).strftime('%Y-%m-%d, %H:%M')}"
 
-        # prompts = self.set_prompts(ids)
-        # content_keyword = self.generate_content(prompts['keyword'], type='keyword')
-        # print(f"Content Keyword : {content_keyword}")
+        prompts = self.set_prompts(ids)
+        content_keyword = self.generate_content(prompts['keyword'], type='keyword')
+        logger.info(f"Content Keyword : {content_keyword}")
 
         cfg = tool.get_user_config(self.s3_conn, ids)
 
-        # soup.find('td', id='keyword').string = f"{content_keyword}"
+        soup.find('td', id='keyword').string = f"{content_keyword}"
         soup.find('td', id='writer').string = cfg['userRealName']
         soup.find('td', id='reviewer').string = cfg['reviewerRealName']
 
-        # summary = soup.find('ul', id='summary-list')
+        #TODO : 문어체로, 레포트 형식으로 어떻게 나오게 할 지 정하고 pdf로 옮겨야 함.
+
+        summary = soup.find('ul', id='summary-list')
         # generated_summary = self.generate_content(prompts['summary'], type='summary')
         # print(f"Generated Summary : {generated_summary}")
 
-        # TODO
         conv = self.get_dialogues(ids)
-        generated_learned = self.gen_chain_content(conv, type='learned')
-        logger.info(f"Generated Learned : {generated_learned}")
+        generated_summary = self.gen_chain_content(conv, type='summary', tok_num=400)
+        logger.info(f"Generated summary : {generated_summary}")
 
-        # generated_tomorrow = self.generate_content(prompts['tomorrow'], type='tomorrow')
-        # print(f"Generated Learned : {generated_tomorrow}")
-
+        generated_result = self.gen_chain_content(conv, type='learned', tok_num=1000)
+        logger.info(f"Generated Leanred : {generated_result}")
 
         new_tag = soup.new_tag("li", style="list-style-type:disc")
         # new_tag.string = generated_summary
         # summary.append(new_tag)
         soup.find('ul', id='learned-list')
-        soup.find('ul', id='tomorrow-list')
         return soup.prettify()
 
     def make_pdf(self, ids, content=None, css=None):
