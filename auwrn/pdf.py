@@ -65,23 +65,26 @@ class Contenter(ContentGenerator):
         soup.find('td', id='writer').string = cfg['userRealName']
         soup.find('td', id='reviewer').string = cfg['reviewerRealName']
 
-        #TODO : 문어체로, 레포트 형식으로 어떻게 나오게 할 지 정하고 pdf로 옮겨야 함.
-
-        summary = soup.find('ul', id='summary-list')
-        # generated_summary = self.generate_content(prompts['summary'], type='summary')
-        # print(f"Generated Summary : {generated_summary}")
-
         conv = self.get_dialogues(ids)
+        #TODO : 문어체로, 레포트 형식으로 어떻게 나오게 할 지 정하고 pdf로 옮겨야 함.
+        summary_tag = soup.find('ul', id='summary-list')
         generated_summary = self.gen_chain_content(conv, type='summary', tok_num=400)
+        generated_summary = self.trim_contents(generated_summary)
         logger.info(f"Generated summary : {generated_summary}")
+        for elem in generated_summary:
+            new_tag = soup.new_tag("li", style="list-style-type:disc")
+            new_tag.string = "● "+elem
+            summary_tag.append(new_tag)
 
+        result_tag = soup.find('ul', id='learned-list')
         generated_result = self.gen_chain_content(conv, type='learned', tok_num=1000)
+        generated_result = self.trim_contents(generated_result)
         logger.info(f"Generated Leanred : {generated_result}")
-
-        new_tag = soup.new_tag("li", style="list-style-type:disc")
-        # new_tag.string = generated_summary
-        # summary.append(new_tag)
-        soup.find('ul', id='learned-list')
+        for elem in generated_result:
+            new_tag = soup.new_tag("li", style="list-style-type:disc")
+            new_tag.string = "● "+elem
+            result_tag.append(new_tag)
+        
         return soup.prettify()
 
     def make_pdf(self, ids, content=None, css=None):
@@ -95,6 +98,11 @@ class Contenter(ContentGenerator):
             #stylesheets=[css]
         )
         return path
+
+    def trim_contents(self, content):
+        content = content.replace('저는 ', '')
+        content = content.replace('나는 ', '')
+        return content.split('-')
 
 if __name__=="__main__":
     from auwrn.utils import S3Connector

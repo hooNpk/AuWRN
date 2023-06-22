@@ -18,7 +18,7 @@ class ChatGenerator():
         self.prompts = prompt
 
     @retry(APIConnectionError, tries=3, delay=1)
-    def generate_text(self, input_prompt, type=None, tok_num=400):
+    def generate_text(self, input_prompt, type=None, tok_num=1000):
         req_prompt = self.prompts[type]+input_prompt
         try:
             completions = openai.ChatCompletion.create(
