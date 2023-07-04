@@ -52,7 +52,7 @@ class ContentGenerator():
         )
         response = chat(input_prompt.format_messages(
             conversation = conversation
-        ))
+        )).content
         return response
 
     def set_prompt(self, id, input_txt):
