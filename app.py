@@ -1,6 +1,10 @@
 import os
 from slack_sdk.errors import SlackApiError
 from slack_bolt import App
+from slack_bolt.oauth.oauth_settings import OAuthSettings
+from slack_sdk.oauth.installation_store import FileInstallationStore
+from slack_sdk.oauth.state_store import FileOAuthStateStore
+
 from config import *
 from auwrn.generate_chat import ChatGenerator
 from auwrn.utils import S3Connector
@@ -16,9 +20,18 @@ from loguru import logger
 logger.remove()
 log_config = DevelopmentLogConfig()
 logger.configure(**log_config.LOGURU_SETTINGS)
+
+oauth_settings = OAuthSettings(
+    client_id=SLACK_CLIENT_ID,
+    client_secret=SLACK_CLIENT_SECRET,
+    scopes=["channels:history","channels:read","chat:write","im:history","im:read","im:write","users:read","files:read","files:write","emoji:read"],
+    installation_store=FileInstallationStore(base_dir="./data/installations"),
+    state_store=FileOAuthStateStore(expiration_seconds=600, base_dir="./data/states")
+)
+
 app = App(
-    token=SLACK_BOT_TOKEN,
-    signing_secret=SLACK_SIGNING_SECRET
+    signing_secret=SLACK_SIGNING_SECRET,
+    oauth_settings=oauth_settings
 )
 chat_gen = ChatGenerator(OPENAI_ORG, OPENAI_KEY)
 s3_conn = S3Connector(AWS_KEY, AWS_SECRET)
