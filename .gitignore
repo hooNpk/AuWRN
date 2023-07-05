@@ -210,3 +210,4 @@ nohup.out
 shellscript.out
 auwrn/data/*
 auwrn/log/*
+data/*
