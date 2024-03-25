@@ -2,7 +2,7 @@ import os, sys
 from datetime import datetime, timezone, timedelta
 from bs4 import BeautifulSoup
 from loguru import logger
-os.add_dll_directory("C:\\Program Files\\GTK3-Runtime Win64\\bin")
+#os.add_dll_directory("C:\\Program Files\\GTK3-Runtime Win64\\bin")
 MODULE_PATH = os.path.dirname(__file__)
 sys.path.append(os.getcwd())#없애야 할 수도 있음.
 
