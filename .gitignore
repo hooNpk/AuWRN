@@ -136,7 +136,8 @@ celerybeat.pid
 
 # Environments
 .env
-.venv
+.
+auwrn-venv/*
 env/
 venv/
 ENV/
@@ -210,4 +211,5 @@ nohup.out
 shellscript.out
 auwrn/data/*
 auwrn/log/*
+auwrn/notes/*
 data/*

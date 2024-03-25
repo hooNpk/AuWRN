@@ -1,11 +1,12 @@
 import os
+from dotenv import load_dotenv
 from slack_sdk.errors import SlackApiError
 from slack_bolt import App
+from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 from slack_sdk.oauth.installation_store import FileInstallationStore
 from slack_sdk.oauth.state_store import FileOAuthStateStore
 
-from config import *
 from auwrn.generate_chat import ChatGenerator
 from auwrn.utils import S3Connector
 from auwrn.view import home_view
@@ -17,25 +18,30 @@ import json
 from loguru import logger
 
 # Initializes your app with your bot token and signing secret
+load_dotenv()
 logger.remove()
 log_config = DevelopmentLogConfig()
 logger.configure(**log_config.LOGURU_SETTINGS)
 
-oauth_settings = OAuthSettings(
-    client_id=SLACK_CLIENT_ID,
-    client_secret=SLACK_CLIENT_SECRET,
-    scopes=["channels:history","channels:read","chat:write","im:history","im:read","im:write","users:read","files:read","files:write","emoji:read"],
-    installation_store=FileInstallationStore(base_dir="./data/installations"),
-    state_store=FileOAuthStateStore(expiration_seconds=600, base_dir="./data/states")
-)
+# oauth_settings = OAuthSettings(
+#     client_id=os.environ.get('SLACK_CLIENT_ID'),
+#     client_secret=os.environ.get('SLACK_CLIENT_SECRET'),
+#     scopes=["channels:history","channels:read","chat:write","im:history","im:read","im:write","users:read","files:read","files:write","emoji:read"],
+#     redirect_uri=None,
+#     redirect_uri_path="/slack/oauth_redirect",
+#     installation_store=FileInstallationStore(base_dir="./data/installations"),
+#     state_store=FileOAuthStateStore(expiration_seconds=600, base_dir="./data/states")
+# )
+# app = App(
+#     signing_secret=os.environ.get('SLACK_SIGNING_SECRET'),
+#     oauth_settings=oauth_settings
+# )
 
-app = App(
-    signing_secret=SLACK_SIGNING_SECRET,
-    oauth_settings=oauth_settings
-)
-chat_gen = ChatGenerator(OPENAI_ORG, OPENAI_KEY)
-s3_conn = S3Connector(AWS_KEY, AWS_SECRET)
-filer = Contenter(OPENAI_ORG, OPENAI_KEY, s3_conn)
+app = App(token=os.environ.get('SLACK_BOT_TOKEN'))
+
+chat_gen = ChatGenerator(os.environ.get('OPENAI_ORG'), os.environ.get('OPENAI_KEY'))
+s3_conn = S3Connector(os.environ.get('AWS_KEY'), os.environ.get('AWS_SECRET'))
+filer = Contenter(os.environ.get('OPENAI_ORG'), os.environ.get('OPENAI_KEY'), s3_conn)
 REQ_SGNTRE = False
 
 @app.event("app_home_opened")
@@ -189,4 +195,4 @@ def handle_interaction(ack, payload):
 
 # Start your app
 if __name__ == "__main__":
-    app.start(port=3000)
+    SocketModeHandler(app, os.environ.get("SLACK_APP_TOKEN")).start()

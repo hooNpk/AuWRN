@@ -1,9 +1,9 @@
+import os
 import openai
 from openai.error import APIConnectionError
 import traceback
 from datetime import datetime
 import pytz
-from config import *
 from prompts import prompt
 from auwrn.utils import S3Connector
 import json
@@ -12,7 +12,7 @@ KST = pytz.timezone('Asia/Seoul')
 
 class ChatGenerator():
     def __init__(self, organization, key) -> None:
-        self.conn = S3Connector(AWS_KEY, AWS_SECRET)
+        self.conn = S3Connector(os.environ.get('AWS_KEY'), os.environ.get('AWS_SECRET'))
         openai.organization = organization
         openai.api_key = key
         self.prompts = prompt
