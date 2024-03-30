@@ -23,21 +23,19 @@ logger.remove()
 log_config = DevelopmentLogConfig()
 logger.configure(**log_config.LOGURU_SETTINGS)
 
-# oauth_settings = OAuthSettings(
-#     client_id=os.environ.get('SLACK_CLIENT_ID'),
-#     client_secret=os.environ.get('SLACK_CLIENT_SECRET'),
-#     scopes=["channels:history","channels:read","chat:write","im:history","im:read","im:write","users:read","files:read","files:write","emoji:read"],
-#     redirect_uri=None,
-#     redirect_uri_path="/slack/oauth_redirect",
-#     installation_store=FileInstallationStore(base_dir="./data/installations"),
-#     state_store=FileOAuthStateStore(expiration_seconds=600, base_dir="./data/states")
-# )
-# app = App(
-#     signing_secret=os.environ.get('SLACK_SIGNING_SECRET'),
-#     oauth_settings=oauth_settings
-# )
+oauth_settings = OAuthSettings(
+    client_id=os.environ.get('SLACK_CLIENT_ID'),
+    client_secret=os.environ.get('SLACK_CLIENT_SECRET'),
+    scopes=["channels:history","channels:read","chat:write","im:history","im:read","im:write","users:read","files:read","files:write","emoji:read"],
+    installation_store=FileInstallationStore(base_dir="./data/installations"),
+    state_store=FileOAuthStateStore(expiration_seconds=600, base_dir="./data/states")
+)
 
-app = App(token=os.environ.get('SLACK_BOT_TOKEN'))
+app = App(
+    token=os.environ.get('SLACK_BOT_TOKEN'),
+    signing_secret=os.environ["SLACK_SIGNING_SECRET"],
+    oauth_settings=oauth_settings
+)
 
 chat_gen = ChatGenerator(os.environ.get('OPENAI_ORG'), os.environ.get('OPENAI_KEY'))
 s3_conn = S3Connector(os.environ.get('AWS_KEY'), os.environ.get('AWS_SECRET'))
