@@ -40,13 +40,12 @@ def lambda_handler(event, context):
 
     """
         S3에 업로드
-        token_type, bot_user_id, app_id 순으로 파일 생성
+        token_type, bot_user_id, team_id 순으로 파일 생성
         생성한 파일을 S3에 업로드
     """
-    token_type = res['token_type']
-    bot_user_id = res['bot_user_id']
-    app_id = res['app_id']
-    path = f"access-token/{token_type}/{bot_user_id}-{app_id}"
+    authed_user_id = res['authed_user']['id']
+    team_id = res['team']['id']
+    path = f"access-token/{team_id}/{authed_user_id}"
     redirect_url = "https://www.sayulab.com/auwrn/welcome"
     s3_conn.upload_object(
         path=path,
