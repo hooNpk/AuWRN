@@ -2,6 +2,7 @@ import json
 import os
 from utils import S3Connector
 from slack_api import post_to_slack
+from generate_chat import generate_text
 import view
 import base64
 from urllib import parse
@@ -86,19 +87,25 @@ def lambda_handler(event, context):
             user_id = slack_event['user']
             text = slack_event['text']
             
-            # "안녕" 메시지에 대한 응답
-            if text == 'hello':
-                response_text = f"hello, <@{user_id}>님!"
-                try:
-                    post_to_slack(
-                        bot_access_token,
-                        json.dumps({
-                            'channel' : ch_id,
-                            'text' : response_text
-                        }).encode('utf-8')
-                    )
-                except Exception as e:
-                    print(f"POST MESSAGE ERROR : {e}")
+            # "사랑해" 메시지에 대한 응답
+            if text == '사랑해':
+                response_text = f"고맙습니다. 저도 사랑해요, <@{user_id}>님!"
+            else:
+                response_text = generate_text(
+                    [{"role": "user", "content":text}]
+                )
+            try:
+                post_to_slack(
+                    bot_access_token,
+                    json.dumps({
+                        'channel' : ch_id,
+                        'text' : response_text
+                    }).encode('utf-8')
+                )
+            except Exception as e:
+                print(f"POST MESSAGE ERROR : {e}")
+
+
     elif 'actions' in body: #button interaction
         block = body['actions'][0]
         block_id:str = block['block_id']
