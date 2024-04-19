@@ -1,5 +1,6 @@
 import boto3
 import traceback
+import json
 
 class S3Connector():
     def __init__(self, access_key, secret) -> None:
@@ -53,3 +54,24 @@ class S3Connector():
             )
         except Exception as e:
             print(traceback.format_exc())
+    
+    def is_new_user(self, team_id, user_id):
+        user_list = self.get_list(f"org-list/team-{team_id}/user-{user_id}")
+        if user_list['KeyCount'] == 0:
+            return True
+        else:
+            return False
+    
+    def update_user_config(self, team_id, user_id, kwargs):
+        config = json.loads(self.get_object(
+            f"org-list/team-{team_id}/user-{user_id}/config.json"
+        ))
+        for key, item in kwargs.items():
+            config[key] = item
+        self.upload_object(
+            f"org-list/team-{team_id}/user-{user_id}/config.json",
+            data = json.dumps(
+                config,
+                ensure_ascii=False
+            )
+        )
