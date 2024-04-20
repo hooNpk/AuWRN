@@ -213,3 +213,6 @@ auwrn/data/*
 auwrn/log/*
 auwrn/notes/*
 data/*
+
+#model
+sagemaker/intent-classifier/*model*
